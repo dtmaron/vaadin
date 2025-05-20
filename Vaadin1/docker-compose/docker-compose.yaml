@@ -1,56 +1,55 @@
-version: '3.9'
+version: '3.8'
 
 services:
   db:
     image: mysql:latest
     deploy:
       replicas: 1
-      placement:
-        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
     environment:
       MYSQL_DATABASE: example
       MYSQL_ROOT_PASSWORD: 123
-    volumes:
-      - db-data:/var/lib/mysql
     networks:
-      - backend
+      - network
+    ports:
+      - "3308:3306"
 
   adminer:
     image: adminer:latest
     deploy:
       replicas: 1
-      placement:
-        constraints: [node.role == worker]
-    ports:
-      - target: 8080
-        published: 8080
-        mode: host
-    networks:
-      - frontend
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
     depends_on:
       - db
+    networks:
+      - network
+    ports:
+      - "8085:8080"
 
   app:
     image: vaadinapp
     build: ../
     deploy:
       replicas: 1
-      placement:
-        constraints: [node.role == worker]
-    ports:
-      - target: 8082
-        published: 8082
-        mode: host
-    networks:
-      - frontend
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - db
-
-volumes:
-  db-data:
+    networks:
+      - network
+    ports:
+      - "8082:8082"
 
 networks:
-  frontend:
-    driver: overlay
-  backend:
+  network:
     driver: overlay
