@@ -15,19 +15,6 @@ services:
     ports:
       - "3308:3306"
 
-  adminer:
-    image: adminer:latest
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-    depends_on:
-      - db
-    ports:
-      - "8085:8080"
-
   app:
     image: vaadinapp
     build: ../
