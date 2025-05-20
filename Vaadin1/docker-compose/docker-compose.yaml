@@ -1,37 +1,56 @@
-name: mysql_db
+version: '3.9'
 
 services:
   db:
     image: mysql:latest
-    container_name: db
-    restart: always
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
     environment:
       MYSQL_DATABASE: example
       MYSQL_ROOT_PASSWORD: 123
+    volumes:
+      - db-data:/var/lib/mysql
     networks:
-      - network
-    ports:
-      - "3308:3306"
+      - backend
+
   adminer:
     image: adminer:latest
-    container_name: adminer
-    restart: always
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+    ports:
+      - target: 8080
+        published: 8080
+        mode: host
+    networks:
+      - frontend
     depends_on:
       - db
-    networks:
-      - network
-    ports:
-      - "8080:8080"
+
   app:
     image: vaadinapp
     build: ../
-    container_name: vaadinapp
-    restart: always
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+    ports:
+      - target: 8082
+        published: 8082
+        mode: host
+    networks:
+      - frontend
     depends_on:
       - db
-    networks:
-      - network
-    ports:
-      - "8082:8082"
+
+volumes:
+  db-data:
+
 networks:
-  network:
+  frontend:
+    driver: overlay
+  backend:
+    driver: overlay
