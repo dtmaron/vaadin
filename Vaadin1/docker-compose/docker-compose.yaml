@@ -12,8 +12,6 @@ services:
     environment:
       MYSQL_DATABASE: example
       MYSQL_ROOT_PASSWORD: 123
-    networks:
-      - network
     ports:
       - "3308:3306"
 
@@ -27,8 +25,6 @@ services:
         max_attempts: 3
     depends_on:
       - db
-    networks:
-      - network
     ports:
       - "8085:8080"
 
@@ -45,11 +41,5 @@ services:
       - "host.docker.internal:host-gateway"
     depends_on:
       - db
-    networks:
-      - network
     ports:
       - "8082:8082"
-
-networks:
-  network:
-    driver: overlay
